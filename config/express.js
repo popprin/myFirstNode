@@ -5,7 +5,6 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import passport from 'passport';
 
-
 module.exports = function () {
     const app = express();
 
@@ -17,22 +16,24 @@ module.exports = function () {
     }
 
     app.use(bodyParser.urlencoded({
-       extended: true
+        extended: true
     }));
+     app.use(bodyParser.json());
+    var config = require('./config');
+    app.use(session({
+        secret: config.sessionSecret,
+        resave: false,
+        saveUninitializeed: true
+    }));
+    app.use(passport.initialize()); // start passport
+    app.use(passport.session()); // use session via express-session
 
-var config = require('./config');
-       app.use(session({
-              secret: config.sessionSecret,
-              resave: false,
-              saveUninitializeed: true
-       }));
-       app.use(passport.initialize()); // start passport
-       app.use(passport.session()); // use session via express-session
-
-
-
-    app.use(bodyParser.json());
+    var path = require("path");
+    app.set('views', path.join(__dirname + '/../app/views/home.html'));
+    app.engine('html', require('ejs').renderFile);
+    app.set('view engine', 'ejs');
     require('../app/routes/index.route')(app);
     require('../app/routes/user.route')(app);
+    require('../app/routes/post.route')(app);
     return app;
 }
